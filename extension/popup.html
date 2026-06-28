@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #111;
+        --muted: #6b7280;
+        --line: #ececf0;
+        --card: #f7f7f9;
+        --accent1: #f9ce34;
+        --accent2: #ee2a7b;
+        --accent3: #6228d7;
+        --blue: #0095f6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root { --bg:#161618; --fg:#f2f2f7; --muted:#9a9aa2; --line:#2a2a2e; --card:#202024; }
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        width: 360px; margin: 0; padding: 14px 14px 16px;
+        background: var(--bg); color: var(--fg);
+      }
+      header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+      .logo {
+        width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto;
+        background: linear-gradient(135deg, var(--accent1), var(--accent2) 50%, var(--accent3));
+        display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 16px;
+      }
+      .title { font-size: 15px; font-weight: 700; line-height: 1.1; }
+      .title small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); margin-top: 2px; }
+      .pill {
+        margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 9px;
+        border-radius: 999px; background: var(--card); color: var(--muted);
+      }
+      .pill.run { background: rgba(0,149,246,.15); color: var(--blue); }
+      .pill.done { background: rgba(34,197,94,.15); color: #22a35a; }
+
+      .section-label { font-size: 11px; font-weight: 700; color: var(--muted);
+        text-transform: uppercase; letter-spacing: .04em; margin: 12px 2px 6px; }
+
+      .card { background: var(--card); border-radius: 12px; padding: 4px 12px; }
+      .row { display: flex; align-items: center; gap: 10px; padding: 9px 0; font-size: 13.5px; }
+      .row + .row { border-top: 1px solid var(--line); }
+      .row .desc { color: var(--muted); font-size: 11px; }
+      .grow { flex: 1; min-width: 0; }
+      input[type="checkbox"] { width: 38px; height: 22px; appearance: none; border-radius: 999px;
+        background: var(--line); position: relative; cursor: pointer; transition: background .15s; flex: 0 0 auto; }
+      input[type="checkbox"]::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+        border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+      input[type="checkbox"]:checked { background: var(--blue); }
+      input[type="checkbox"]:checked::after { transform: translateX(16px); }
+
+      .seg { display: flex; background: var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
+      .seg button { flex: 1; border: 0; background: transparent; color: var(--muted);
+        font-size: 12px; font-weight: 600; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+      .seg button.active { background: var(--bg); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0 6px; }
+      .stat { background: var(--card); border-radius: 10px; padding: 8px 4px; text-align: center; }
+      .stat b { display: block; font-size: 17px; }
+      .stat span { font-size: 10px; color: var(--muted); }
+
+      .bar { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 4px 0 8px; }
+      .bar > i { display: block; height: 100%; width: 30%; border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent2), var(--accent3)); transform: translateX(-100%); }
+      body.running .bar > i { animation: slide 1.1s ease-in-out infinite; }
+      @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(360%)} }
+
+      .btns { display: flex; gap: 8px; margin: 6px 0 8px; }
+      .btns button { flex: 1; padding: 11px; border: 0; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+      #start { background: var(--blue); color: #fff; }
+      #start:disabled { opacity: .5; cursor: default; }
+      #stop { background: var(--card); color: var(--fg); }
+      #stop:disabled { opacity: .5; cursor: default; }
+
+      .log { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+        background: var(--card); border-radius: 10px; padding: 8px 10px; height: 96px; overflow-y: auto;
+        white-space: pre-wrap; word-break: break-word; }
+      .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+      .footer a { font-size: 11px; color: var(--muted); cursor: pointer; text-decoration: underline; }
+      .footer span { font-size: 10px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">▼</div>
+      <div>
+        <div class="title">SaveOS<small>Instagram bulk saver</small></div>
+      </div>
+      <div class="pill" id="pill">Idle</div>
+    </header>
+
+    <div class="section-label">Sources</div>
+    <div class="card">
+      <label class="row"><span class="grow">My posts &amp; reels<div class="desc">Everything on your profile grid</div></span><input type="checkbox" id="ownPosts" checked /></label>
+      <label class="row"><span class="grow">My Saved / bookmarked<div class="desc">Posts you've tapped Save on</div></span><input type="checkbox" id="saved" checked /></label>
+    </div>
+
+    <div class="section-label">Media type</div>
+    <div class="seg" id="mediaFilter">
+      <button data-v="all" class="active">All</button>
+      <button data-v="photos">Photos</button>
+      <button data-v="videos">Videos / reels</button>
+    </div>
+
+    <div class="section-label">Speed</div>
+    <div class="seg" id="speed">
+      <button data-v="safe">Safe</button>
+      <button data-v="normal" class="active">Normal</button>
+      <button data-v="fast">Fast</button>
+    </div>
+
+    <div class="section-label">Options</div>
+    <div class="card">
+      <label class="row"><span class="grow">Skip already-downloaded<div class="desc">Resume runs without re-fetching</div></span><input type="checkbox" id="skipDownloaded" checked /></label>
+      <label class="row"><span class="grow">Save metadata manifest (CSV)<div class="desc">Captions, dates &amp; links</div></span><input type="checkbox" id="writeManifest" /></label>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="s-posts">0</b><span>Posts</span></div>
+      <div class="stat"><b id="s-files">0</b><span>Saved</span></div>
+      <div class="stat"><b id="s-skipped">0</b><span>Skipped</span></div>
+      <div class="stat"><b id="s-failed">0</b><span>Failed</span></div>
+    </div>
+    <div class="bar"><i></i></div>
+
+    <div class="btns">
+      <button id="start">Start</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="footer">
+      <a id="clear">Clear download history</a>
+      <span>Files → Downloads/SaveOS_IG</span>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
